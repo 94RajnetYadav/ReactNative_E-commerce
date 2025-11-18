@@ -1,0 +1,55 @@
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import React, { FC } from 'react';
+import AppText from '../texts/AppText';
+import { AppColors } from '../../styles/colors';
+import { vs, s } from 'react-native-size-matters';
+import { AppFonts } from '../../styles/fonts';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
+interface IProfileSectionButton {
+  onPress: () => void;
+  title: String;
+}
+const ProfileSectionButton: FC<IProfileSectionButton> = ({
+  onPress,
+  title,
+}) => {
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.container}>
+      <View style={styles.textContainer}>
+        <AppText style={styles.textTitle}>{title}</AppText>
+      </View>
+      <View>
+        <MaterialIcons
+          name="arrow-forward-ios"
+          size={s(14)}
+          color={AppColors.medGray}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+export default ProfileSectionButton;
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    borderBottomColor: AppColors.lightGray,
+    paddingBottom: vs(10),
+    marginTop: vs(14),
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+  },
+  textTitle: {
+    fontSize: s(16),
+    fontFamily: AppFonts.Medium,
+    color: AppColors.primary,
+  },
+  textContainer: {
+    flex: 5,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    marginHorizontal: s(8),
+  },
+});
