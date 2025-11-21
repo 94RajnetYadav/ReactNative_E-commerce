@@ -7,6 +7,7 @@ import { FlatList } from 'react-native-gesture-handler';
 import { vs } from 'react-native-size-matters';
 import { useDispatch } from 'react-redux';
 import { addItemsTocart } from '../../store/reducers/cartSlice';
+import { getProductsData } from '../../config/dataServices';
 
 // ✅ Import Firestore
 import firestore from '@react-native-firebase/firestore';
@@ -18,17 +19,11 @@ const HomeScreen = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch data from Firestore
-  const fetchProducts = async () => {
+  const fetchData = async () => {
     try {
-      const productList: any[] = [];
-      const snapshot = await firestore().collection('products').get();
-
-      snapshot.forEach(doc => {
-        productList.push({ id: doc.id, ...doc.data() });
-      });
-
-      setProducts(productList);
+      const data = await getProductsData();
+      console.log(data);
+      setProducts(data ?? []);
     } catch (error) {
       console.log(error);
       console.error('❌ Error fetching products:', error);
@@ -36,9 +31,8 @@ const HomeScreen = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    fetchProducts();
+    fetchData();
   }, []);
 
   if (loading) {

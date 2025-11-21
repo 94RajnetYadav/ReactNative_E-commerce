@@ -1,22 +1,40 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import AppSaveViews from '../../components/views/AppSaveViews';
 import HomeHeader from '../../components/header/HomeHeader';
 import ProfileSectionButton from '../../components/buttons/ProfileSectionButton';
-import AppText from '../../components/texts/AppText';
-import { s, vs } from 'react-native-size-matters';
+import { sharedPaddingHorizontal } from '../../styles/sharedStyles';
+import { useNavigation } from '@react-navigation/native';
+import AppSaveView from '../../components/views/AppSaveViews';
+import { NavigationProp } from '@react-navigation/native';
+
+type RootStackParamList = {
+  MyOrdersScreen: undefined;
+  SignInScreen: undefined;
+  SignUpScreen: undefined;
+  MainAppBottomTabs: undefined;
+};
 
 const ProfileScreen = () => {
+  // const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   return (
-    <AppSaveViews>
+    <AppSaveView>
       <HomeHeader />
-      <AppText variant="bold" style={{ fontSize: s(18), marginTop: vs(10) }}>
-        Hello, Ahmad
-      </AppText>
-      <ProfileSectionButton title="My Orders" onPress={{}} />
-      <ProfileSectionButton title="Language" onPress={{}} />
-      <ProfileSectionButton title="Logout" onPress={{}} />
-    </AppSaveViews>
+      <View style={{ paddingHorizontal: sharedPaddingHorizontal }}>
+        <ProfileSectionButton
+          title={'My Orders'}
+          onPress={() => navigation.navigate('MyOrdersScreen')}
+        />
+        <ProfileSectionButton
+          title={'Language'}
+          onPress={() => navigation.navigate('MyOrdersScreen')}
+        />
+        <ProfileSectionButton
+          title={'Logout'}
+          onPress={() => navigation.navigate('MyOrdersScreen')}
+        />
+      </View>
+    </AppSaveView>
   );
 };
 

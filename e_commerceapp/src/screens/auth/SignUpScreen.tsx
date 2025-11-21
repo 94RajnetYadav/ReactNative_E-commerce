@@ -12,7 +12,11 @@ import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { showMessage } from 'react-native-flash-message';
+// import FlashMessage from 'react-native-flash-message';
 import AppTextInputController from '../../components/inputs/AppTextInputControllers';
+import { setUserData } from '../../store/reducers/userSlice';
+import { useDispatch } from 'react-redux';
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -41,25 +45,58 @@ const SignUpScreen = () => {
   });
 
   const navigation = useNavigation<any>();
+  const dispatch = useDispatch();
   const auth = getAuth();
 
   const onSignUpPress = async (data: FormData) => {
     try {
-      const { email, password } = data;
-      await createUserWithEmailAndPassword(auth, email, password);
-      Alert.alert('Success', 'User account created successfully!');
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password,
+      );
+
+      Alert.alert('User Created');
       navigation.navigate('MainAppBottomTabs');
+      dispatch(setUserData(userCredential.user));
+      // return userCredential.user;
     } catch (error: any) {
-      console.log(error);
+      let errorMessage = '';
+
       if (error.code === 'auth/email-already-in-use') {
-        Alert.alert('Error', 'That email address is already in use!');
+        errorMessage = "This email is already in use! you can't use this email";
       } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Error', 'That email address is invalid!');
+        errorMessage = 'The email address is invalid.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'The password is too weak.';
       } else {
-        Alert.alert('Error', error.message);
+        errorMessage = 'An error occurred during sign-up.';
       }
+
+      showMessage({
+        type: 'danger',
+        message: errorMessage,
+      });
     }
   };
+
+  // const onSignUpPress = async (data: FormData) => {
+  //   try {
+  //     const { email, password } = data;
+  //     await createUserWithEmailAndPassword(auth, email, password);
+  //     Alert.alert('Success', 'User account created successfully!');
+  //     navigation.navigate('MainAppBottomTabs');
+  //   } catch (error: any) {
+  //     console.log(error);
+  //     if (error.code === 'auth/email-already-in-use') {
+  //       Alert.alert('Error', 'That email address is already in use!');
+  //     } else if (error.code === 'auth/invalid-email') {
+  //       Alert.alert('Error', 'That email address is invalid!');
+  //     } else {
+  //       Alert.alert('Error', error.message);
+  //     }
+  //   }
+  // };
 
   return (
     <AppSaveViews style={styles.container}>

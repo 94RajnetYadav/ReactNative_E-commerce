@@ -13,6 +13,10 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import AppTextInputController from '../../components/inputs/AppTextInputControllers';
+
+import { showMessage } from 'react-native-flash-message';
+import { setUserData } from '../../store/reducers/userSlice';
+import { useDispatch } from 'react-redux';
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -42,33 +46,46 @@ type FormData = yup.InferType<typeof schema>;
 const SignInScreen = () => {
   const { control, handleSubmit, reset } = useForm<FormData>({
     resolver: yupResolver(schema),
+    defaultValues: {
+      email: 'raj@gmail.com',
+      password: '123456',
+    },
   });
 
   // const navigation = useNavigation();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  // const onLoginPress = () => navigation.navigate('MainAppBottomTabs');
 
+  const dispatch = useDispatch();
   const onLoginPress = async (data: FormData) => {
     const { email, password } = data;
     const auth = getAuth();
 
     try {
-     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ User signed in successfully!');
-      Alert.alert('Success', 'Logged in successfully!');
-      // reset();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+
       navigation.navigate('MainAppBottomTabs');
+      console.log(JSON.stringify(userCredential, null, 2));
+      dispatch(setUserData(userCredential.user));
     } catch (error: any) {
-      console.error('❌ Login Error:', error);
+      console.log('Sign-in error:', error);
+      let errorMessage = '';
+      console.log(error.code);
       if (error.code === 'auth/user-not-found') {
-        Alert.alert('Error', 'No user found with this email!');
-      } else if (error.code === 'auth/wrong-password') {
-        Alert.alert('Error', 'Incorrect password!');
-      } else if (error.code === 'auth/invalid-email') {
-        Alert.alert('Error', 'Invalid email format!');
+        errorMessage = 'User not found';
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Wrong email or password';
       } else {
-        Alert.alert('Error', error.message);
+        errorMessage = 'An error occurred during sign-in';
       }
+
+      showMessage({
+        type: 'danger',
+        message: errorMessage,
+      });
     }
   };
   return (
@@ -97,6 +114,7 @@ const SignInScreen = () => {
         style={styles.registorButton}
         textColor={AppColors.primary}
       />
+      {/* <FlashMessage position="top" /> */}
     </AppSaveViews>
   );
 };

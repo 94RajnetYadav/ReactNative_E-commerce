@@ -9,10 +9,19 @@ import { AppColors } from '../../styles/colors';
 import AppSaveViews from '../../components/views/AppSaveViews';
 import AppTextInputControllers from '../../components/inputs/AppTextInputControllers';
 import AppButton from '../../components/buttons/AppButton';
-import { IS_Android } from '../../constants/constants';
+import { IS_Android, taxes, shippingFees } from '../../constants/constants';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
+import firestore, {
+  addDoc,
+  collection,
+} from '@react-native-firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { emptyCart } from '../../store/reducers/cartSlice';
 
 // ✅ Validation schema
 const schema = Yup.object({
@@ -40,10 +49,47 @@ const CheckoutScreen = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const navigation = useNavigation();
+  const { userData } = useSelector((state: RootState) => state.userSlice);
+  const { items } = useSelector((state: RootState) => state.cartSlice);
+  const dispatch = useDispatch();
+  const totalProductsPricesSum = items.reduce((acc, item) => acc + item.sum, 0);
+  const totalPrices = totalProductsPricesSum + taxes + shippingFees;
+  console.log('=================userData===================');
+  console.log(JSON.stringify(userData));
+  console.log('=================userData===================');
 
-  const saveOrder = (formData: FormData) => {
-    Alert.alert(JSON.stringify(formData));
-    console.log('✅ Form Submitted:', formData);
+  const saveOrder = async (formData: FormData) => {
+    try {
+      const orderBody = {
+        ...formData,
+        items,
+        totalProductsPricesSum,
+        createdAt: new Date(),
+        totalPrices: totalPrices,
+      };
+      const userOrderRef = firestore()
+        .collection('users')
+        .doc(userData.uid)
+        .collection('orders');
+      // const orderRef =
+      await addDoc(userOrderRef, orderBody);
+      const ordersRef = firestore().collection('orders');
+      await addDoc(ordersRef, orderBody);
+
+      Alert.alert('Success', 'Order placed successfully', [
+        { text: 'OK', onPress: () => console.log('OK Pressed') },
+      ]);
+      navigation.goBack();
+      dispatch(emptyCart());
+      console.log('✅ Form Submitted:', formData);
+    } catch (error) {
+      console.error('Error saving order: ', error);
+      Alert.alert(
+        'Error',
+        'There was an error placing your order. Please try again later.',
+      );
+    }
   };
 
   return (
